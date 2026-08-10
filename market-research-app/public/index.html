@@ -1,0 +1,271 @@
+﻿<!DOCTYPE html>
+<html lang="th">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Market Research Framework™</title>
+    <style>
+        :root {
+            --bg: #f5f6fb;
+            --card: #ffffff;
+            --ink: #182033;
+            --muted: #687386;
+            --line: #e4e7ef;
+            --primary: #5b55d6;
+            --soft: #f0efff;
+            --red: #dc3545;
+        }
+        * { box-sizing: border-box; }
+        body {
+            margin: 0;
+            background: var(--bg);
+            color: var(--ink);
+            font-family: system-ui, -apple-system, "Segoe UI", Roboto, sans-serif;
+        }
+        .wrap { max-width: 1100px; margin: auto; }
+        .top {
+            background: linear-gradient(135deg, #5051c9, #7a42d4);
+            color: #ffffff;
+            padding: 30px 20px 24px;
+        }
+        .brand { font-size: 25px; font-weight: 850; }
+        .subtitle { font-size: 13px; opacity: 0.85; margin-top: 4px; }
+        .search {
+            display: flex;
+            gap: 9px;
+            background: #ffffff;
+            padding: 9px;
+            border-radius: 15px;
+            margin-top: 20px;
+            box-shadow: 0 10px 30px rgba(0, 0, 0, 0.13);
+        }
+        .search input {
+            flex: 1;
+            border: 0;
+            outline: 0;
+            padding: 12px 14px;
+            font: inherit;
+            font-size: 16px;
+            color: var(--ink);
+        }
+        .search button {
+            border: 0;
+            background: #171827;
+            color: #ffffff;
+            border-radius: 10px;
+            padding: 0 20px;
+            font-weight: 800;
+            cursor: pointer;
+            transition: background 0.2s;
+        }
+        .search button:hover { background: #2c2d42; }
+        .search button:disabled { background: #8a91a3; cursor: not-allowed; }
+        main { padding: 24px 20px; }
+        .market-title { font-size: 22px; font-weight: 800; margin-bottom: 5px; }
+        .loading-status {
+            text-align: center;
+            padding: 40px 20px;
+            font-size: 16px;
+            color: var(--primary);
+            font-weight: 600;
+        }
+        .section {
+            background: var(--card);
+            border: 1px solid var(--line);
+            border-radius: 17px;
+            margin-bottom: 16px;
+            padding: 22px;
+            box-shadow: 0 3px 15px rgba(37, 42, 70, 0.06);
+        }
+        .section-head {
+            display: flex;
+            align-items: flex-start;
+            gap: 12px;
+            margin-bottom: 14px;
+        }
+        .num {
+            min-width: 40px;
+            height: 40px;
+            border-radius: 12px;
+            background: var(--soft);
+            color: #5048b4;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-weight: 900;
+        }
+        h2 { margin: 0; font-size: 19px; }
+        .desc { color: var(--muted); font-size: 13px; line-height: 1.7; }
+        ul { margin: 7px 0 0; padding-left: 21px; line-height: 1.85; font-size: 13px; }
+        .analysis {
+            background: #fafaff;
+            border: 1px solid #e5e3f8;
+            border-radius: 12px;
+            padding: 14px;
+            margin-top: 12px;
+            font-size: 13px;
+            line-height: 1.8;
+        }
+        .analysis b { color: #4940a6; }
+        .actions { display: flex; gap: 8px; flex-wrap: wrap; margin: 18px 0; }
+        .btn {
+            border: 0;
+            border-radius: 10px;
+            padding: 10px 14px;
+            font-weight: 750;
+            cursor: pointer;
+            background: var(--primary);
+            color: #ffffff;
+        }
+        .btn.secondary { background: #e9ebf2; color: #30374a; }
+        .empty {
+            text-align: center;
+            background: #ffffff;
+            border: 1px solid var(--line);
+            border-radius: 18px;
+            padding: 55px 25px;
+        }
+        .empty h2 { margin-bottom: 8px; }
+        .empty p { color: var(--muted); font-size: 14px; }
+        .footer { text-align: center; color: #8a91a3; font-size: 11px; padding: 12px 20px 28px; }
+        @media (max-width: 700px) {
+            .search { flex-direction: column; }
+            .search button { padding: 12px; }
+            .section { padding: 17px; }
+        }
+    </style>
+</head>
+<body>
+<header class="top">
+    <div class="wrap">
+        <div class="brand">Market Research Framework™</div>
+        <div class="subtitle">Powered by Gemini 3.1 Flash-Lite (Vercel Cloud)</div>
+        <div class="search">
+            <input id="productInput" placeholder="กรอกชื่อสินค้า เช่น เครื่องให้อาหารแมวอัตโนมัติ">
+            <button id="searchBtn" onclick="startAiAnalysis()">วิเคราะห์ตลาดด้วย AI →</button>
+        </div>
+    </div>
+</header>
+<main class="wrap">
+    <div id="appContainer">
+        <div class="empty">
+            <h2>กรอกชื่อสินค้าเพื่อเริ่มวิเคราะห์</h2>
+            <p>ระบบจะส่งคำขอไปยัง Vercel Cloud Serverless Function ประมวลผลด้วย Gemini 3.1 Flash-Lite</p>
+        </div>
+    </div>
+</main>
+<div class="footer">Market Research Framework™</div>
+<script>
+    let currentReportText = "";
+    function escapeHtml(str) {
+        return String(str || "").replace(/[&<>"']/g, m => ({
+            "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;", "'": "&#039;"
+        }[m]));
+    }
+    async function startAiAnalysis() {
+        const productName = document.getElementById("productInput").value.trim();
+        if (!productName) {
+            alert("กรุณากรอกชื่อสินค้าที่ต้องการวิเคราะห์ครับ");
+            return;
+        }
+        const appContainer = document.getElementById("appContainer");
+        const searchBtn = document.getElementById("searchBtn");
+        searchBtn.disabled = true;
+        appContainer.innerHTML = `
+            <div class="market-title">กำลังวิเคราะห์ตลาดสำหรับ: ${escapeHtml(productName)}</div>
+            <div class="loading-status">🤖 Vercel Serverless กำลังประมวลผลผ่าน Gemini 3.1 Flash-Lite...</div>
+        `;
+        try {
+            const response = await fetch('/api/analyze', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ productName })
+            });
+            const result = await response.json();
+            if (!result.success) {
+                throw new Error(result.error);
+            }
+            renderDashboard(productName, result.data);
+        } catch (error) {
+            console.error(error);
+            appContainer.innerHTML = `
+                <div class="empty" style="border-color: var(--red);">
+                    <h2 style="color: var(--red);">เกิดข้อผิดพลาดในการเชื่อมต่อ</h2>
+                    <p style="text-align: left; background: #fff5f5; padding: 12px; border-radius: 8px; font-size: 12px; color: #c53030; word-break: break-all;">
+                        ${escapeHtml(error.message)}
+                    </p>
+                    <button class="btn" onclick="location.reload()">ลองใหม่อีกครั้ง</button>
+                </div>
+            `;
+        } finally {
+            searchBtn.disabled = false;
+        }
+    }
+    function renderDashboard(productName, aiData) {
+        const appContainer = document.getElementById("appContainer");
+        appContainer.innerHTML = `
+            <div class="section">
+                <div class="section-head">
+                    <div class="num">0</div>
+                    <div><h2>Trend Evolution™ (AI Analysis)</h2><div class="desc">${escapeHtml(productName)}</div></div>
+                </div>
+                <div class="analysis">
+                    <b>สถานะตลาดปัจจุบัน:</b> <b>${escapeHtml(aiData.currentPhase)}</b><br>
+                    <b>ช่วงถัดไปที่ควรจับตา:</b> <b>${escapeHtml(aiData.nextPhase)}</b><br><br>
+                    <b>💡 โอกาส:</b> ${escapeHtml(aiData.opportunity)}<br>
+                    <b>⚠️ ความเสี่ยง:</b> ${escapeHtml(aiData.risk)}<br>
+                    <b>🎯 กลยุทธ์ที่แนะนำ:</b> ${escapeHtml(aiData.strategy)}
+                </div>
+            </div>
+            <div class="section">
+                <div class="section-head">
+                    <div class="num">1</div>
+                    <div><h2>Market Research Framework™</h2><div class="desc">ข้อวิเคราะห์ 7 มิติจาก AI</div></div>
+                </div>
+                ${renderSubSection("1", "Opportunity™", "มองเห็นโอกาส", aiData.framework.opportunity)}
+                ${renderSubSection("2", "Market Learning™", "เรียนรู้ตลาด", aiData.framework.learning)}
+                ${renderSubSection("3", "Trading™", "ซื้อมา-ขายไป", aiData.framework.trading)}
+                ${renderSubSection("4", "Market Insight™", "เข้าใจตลาด", aiData.framework.insight)}
+                ${renderSubSection("5", "Rare Opportunity™", "โอกาสที่คนมองไม่เห็น", aiData.framework.rare)}
+                ${renderSubSection("6", "Networking™", "สร้างเครือข่าย", aiData.framework.networking)}
+                ${renderSubSection("7", "Platform Strategy™", "ใช้แพลตฟอร์ม", aiData.framework.platform)}
+            </div>
+            <div class="section">
+                <div class="section-head"><div class="num">$</div><div><h2>Money Flow™</h2></div></div>
+                <div class="analysis">
+                    <ul>
+                        ${(aiData.moneyFlow || []).map(item => `<li>${escapeHtml(item)}</li>`).join("")}
+                    </ul>
+                </div>
+            </div>
+            <div class="actions">
+                <button class="btn" onclick="copyReport()">คัดลอกผลลัพธ์ (JSON)</button>
+                <button class="btn secondary" onclick="location.reload()">วิเคราะห์สินค้าใหม่</button>
+            </div>
+        `;
+        currentReportText = JSON.stringify(aiData, null, 2);
+    }
+    function renderSubSection(num, name, title, items) {
+        return `
+            <div class="section" style="margin-top: 14px; background: #fcfcfe;">
+                <div class="section-head"><div class="num">${num}</div><div><h2>${name}</h2><div class="desc">${title}</div></div></div>
+                <ul>
+                    ${(items || []).map(item => `<li>${escapeHtml(item)}</li>`).join("")}
+                </ul>
+            </div>
+        `;
+    }
+    function copyReport() {
+        if (!currentReportText) return;
+        navigator.clipboard.writeText(currentReportText)
+            .then(() => alert("คัดลอกข้อมูลเรียบร้อยแล้ว"))
+            .catch(err => alert("เกิดข้อผิดพลาดในการคัดลอก: " + err));
+    }
+    document.getElementById("productInput").addEventListener("keydown", function(e) {
+        if (e.key === "Enter") {
+            startAiAnalysis();
+        }
+    });
+</script>
+</body>
+</html>

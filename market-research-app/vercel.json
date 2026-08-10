@@ -1,0 +1,12 @@
+﻿{
+  "rewrites": [
+    {
+      "source": "/api/analyze",
+      "destination": "/api/analyze.js"
+    },
+    {
+      "source": "/(.*)",
+      "destination": "/public/$1"
+    }
+  ]
+}
